@@ -8,17 +8,23 @@ import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.xwray.groupie.ExpandableGroup
+import com.xwray.groupie.ExpandableItem
 import com.xwray.groupie.GroupieAdapter
+import com.xwray.groupie.Section
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     var groupieAdapter = GroupieAdapter()
+    var artistSection = Section()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         setupUI()
     }
+
     private val itemTouchHelper by lazy {
         val itemTouchCallback =
             object : ItemTouchHelper.SimpleCallback(
@@ -42,55 +48,103 @@ class MainActivity : AppCompatActivity() {
             }
         ItemTouchHelper(itemTouchCallback)
     }
-
-    private fun setupUI(){
+    private fun setupUI() {
 
         artists_recycler.adapter = groupieAdapter
 
-        groupieAdapter.addAll(getArtists())
 
+//        getSongs().forEach { songItem ->
+//            groupieAdapter.add(ArtistItem(songItem.name, clickHandler = {
+//
+//            }))
+//        }
+
+
+
+//        groupieAdapter.add(TestItem("Aldwin"))
+//        groupieAdapter.add(ArtistItem("Aldwin",null))
+//        groupieAdapter.addAll(getArtistsList())
+
+
+
+        //Using Sections
+//        artistSection.addAll(getArtists())
+//        groupieAdapter.addAll(artistSection.groups)
+
+
+        //Groupie Onclick
         groupieAdapter.setOnItemClickListener { item, view ->
             when(item){
                 is ArtistItem ->{
-                    var artistItem = item
-                    artistItem.name
+                    item.name
 
                 }
                 is TestItem -> {
-                    item.nameTest
-
+                    item.name
                 }
             }
         }
+
+        groupieAdapter.updateAsync(artistSection.groups)
+
+
+        //EXPANDABLE GROUP
+
+        getArtists().forEach { artist ->
+            var songSection = Section()
+
+            val header = ExpandableGroup(artist)
+
+            songSection = Section()
+            songSection.addAll(songList())
+
+            header.addAll(songSection.groups)
+
+            groupieAdapter.add(header)
+        }
+
+        //Drag and drop
+        itemTouchHelper.attachToRecyclerView(artists_recycler)
     }
 
     private fun getArtists(): MutableList<ArtistItem> {
         return mutableListOf(
-            ArtistItem("Aldwin") {
-                doSomething(it)
-            },
-            ArtistItem("Jade", null),
-            ArtistItem("Nak", null),
-            ArtistItem("Haider", null),
-            ArtistItem("Waylan", null)
+
+            ArtistItem("Haider"),
+            ArtistItem("Waylan")
         )
     }
 
+//    private fun getArtistsList(): MutableList<TestItem> {
+//        return mutableListOf(
+//            TestItem("Aldwin", clickHandler = {
+//
+//            }),
+//            TestItem("Jade"),
+//            TestItem("Nak"),
+//            TestItem("Haider"),
+//            TestItem("Waylan")
+//        )
+//    }
 
-    private fun getArtistsList(): MutableList<ArtistModel> {
-        val listOfSongs: MutableList<ArtistModel> = mutableListOf()
-        for (i in 0..10){
-            listOfSongs.add(ArtistModel(i,"Name $i", getSongs()))
-        }
-        return listOfSongs
+
+    private fun songList() : MutableList<SongItem>{
+        return mutableListOf(
+            SongItem("Song 1", null),
+            SongItem("Song 2", null),
+            SongItem("Song 3", null)
+        )
+    }
+    private fun getSongs(): MutableList<ArtistModel> {
+
+        return mutableListOf(
+            ArtistModel(1, "Song 1", mutableListOf()),
+            ArtistModel(2, "Song 2", mutableListOf()),
+            ArtistModel(3, "Song 3", mutableListOf())
+        )
     }
 
-
-    private fun getSongs(): MutableList<String> {
-
-        return mutableListOf("Song 1", "Song 2", "Song 3")
-    }
-    private fun doSomething(pos: Int) {
-        Log.e("test", "test")
+    private fun doSomething(message: String) {
+        Log.e("test", "$message")
     }
 }
